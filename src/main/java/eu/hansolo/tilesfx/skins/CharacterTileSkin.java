@@ -53,7 +53,7 @@ public class CharacterTileSkin extends TileSkin {
         description.setTextAlignment(TextAlignment.CENTER);
         description.setWrapText(true);
         description.setTextOverrun(OverrunStyle.WORD_ELLIPSIS);
-        description.setTextFill(tile.getTextColor());
+        description.setTextFill(tile.getDescriptionColor());
         description.setPrefSize(PREFERRED_WIDTH * 0.9, PREFERRED_HEIGHT * 0.795);
         Helper.enableNode(description, tile.isTextVisible());
 
@@ -83,9 +83,10 @@ public class CharacterTileSkin extends TileSkin {
 
     // ******************** Resizing ******************************************
     @Override protected void resizeDynamicText() {
-        double fontSize = size * 0.65;
-        description.setFont(Fonts.latoLight(fontSize));
+        double fontSize = 36;
+        description.setFont(Fonts.latoRegular(fontSize));
     }
+
     @Override protected void resizeStaticText() {
         double maxWidth = width - size * 0.1;
         double fontSize = size * textSize.factor;
@@ -112,14 +113,14 @@ public class CharacterTileSkin extends TileSkin {
             case CENTER: text.setX((width - text.getLayoutBounds().getWidth()) * 0.5); break;
             case RIGHT : text.setX(width - (size * 0.05) - text.getLayoutBounds().getWidth()); break;
         }
-        text.setY(height - size * 0.05);
+        text.setY(height - size * 0.04);
     }
 
     @Override protected void resize() {
         super.resize();
 
         description.setPrefSize(contentBounds.getWidth(), height - size * 0.255);
-        description.relocate(contentBounds.getX(), height * 0.1125);
+        description.relocate(contentBounds.getX(), height * 0.145);
     }
 
     @Override protected void redraw() {
@@ -132,6 +133,6 @@ public class CharacterTileSkin extends TileSkin {
 
         titleText.setFill(tile.getTitleColor());
         text.setFill(tile.getTextColor());
-        description.setTextFill(tile.getTextColor());
+        description.setTextFill(tile.getDescriptionColor());
     }
 }

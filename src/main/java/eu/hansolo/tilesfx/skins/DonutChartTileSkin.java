@@ -229,7 +229,8 @@ public class DonutChartTileSkin extends TileSkin {
             chartCtx.fillText(String.format(Locale.US, "%.0f", sum), center, center, canvasSize * 0.4);
         }
 
-        chartCtx.setFont(Fonts.latoRegular(barWidth * 0.5));
+        // Font for Bar %
+        chartCtx.setFont(Fonts.latoRegular(12));
         for (int i = 0 ; i < noOfItems ; i++) {
             ChartData data  = dataList.get(i);
             double    value = data.getValue();
@@ -261,6 +262,7 @@ public class DonutChartTileSkin extends TileSkin {
         }
     }
 
+    // Side Legend
     private void drawLegend() {
         List<ChartData> dataList     = tile.getChartData();
         double          canvasWidth  = legendCanvas.getWidth();
@@ -272,7 +274,7 @@ public class DonutChartTileSkin extends TileSkin {
         legendCtx.clearRect(0, 0, canvasWidth, canvasHeight);
         legendCtx.setTextAlign(TextAlignment.LEFT);
         legendCtx.setTextBaseline(VPos.CENTER);
-        legendCtx.setFont(Fonts.latoRegular(canvasHeight * 0.05));
+        legendCtx.setFont(Fonts.latoBold(12));
 
         for (int i = 0 ; i < noOfItems ; i++) {
             ChartData data = dataList.get(i);

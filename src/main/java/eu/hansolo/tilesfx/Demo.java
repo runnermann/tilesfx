@@ -856,6 +856,14 @@ public class Demo extends Application {
                                    .text("Text")
                                    .barColor(Bright.ORANGE_RED)
                                    .timePeriod(Duration.ofSeconds(30))
+                                    .gradientStops(
+                                            new Stop(0.1, Bright.RED),
+                                            new Stop(0.3, Bright.ORANGE_RED),
+                                            new Stop(0.4, Bright.ORANGE),
+                                            new Stop(0.5, Bright.YELLOW_ORANGE),
+                                            new Stop(0.6, Bright.YELLOW),
+                                            new Stop(0.7, Bright.GREEN_YELLOW),
+                                            new Stop(1.0, Bright.GREEN))
                                    .onAlarm(e -> System.out.println("Alarm"))
                                    .build();
 

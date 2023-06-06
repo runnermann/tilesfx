@@ -18,11 +18,13 @@
 package eu.hansolo.tilesfx.skins;
 
 import eu.hansolo.tilesfx.Alarm;
+import eu.hansolo.tilesfx.Section;
 import eu.hansolo.tilesfx.Tile;
 import eu.hansolo.tilesfx.events.AlarmEvent;
 import eu.hansolo.tilesfx.events.TimeEvent.TimeEventType;
 import eu.hansolo.tilesfx.events.TimeEventListener;
 import eu.hansolo.tilesfx.fonts.Fonts;
+import eu.hansolo.tilesfx.tools.GradientLookup;
 import eu.hansolo.tilesfx.tools.Helper;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.VPos;
@@ -68,6 +70,11 @@ public class CountdownTimerTileSkin extends TileSkin {
     private              ChangeListener<Boolean> runningListener;
     private              TimeEventListener       timeListener;
 
+    // LS Added for dynamic bar color
+    private              GradientLookup gradientLookup;
+    private              boolean        colorGradientEnabled;
+    private              int            noOfGradientStops;
+
 
     // ******************** Constructors **************************************
     public CountdownTimerTileSkin(Tile TILE) {
@@ -86,6 +93,12 @@ public class CountdownTimerTileSkin extends TileSkin {
         angleStep = ANGLE_RANGE / range;
         locale    = tile.getLocale();
 
+        // LS added gradients
+        gradientLookup       = new GradientLookup(tile.getGradientStops());
+        noOfGradientStops    = tile.getGradientStops().size();
+        sectionsVisible      = tile.getSectionsVisible();
+        colorGradientEnabled = tile.isStrokeWithGradient();
+
         titleText = new Text();
         titleText.setFill(tile.getTitleColor());
         enableNode(titleText, !tile.getTitle().isEmpty());
@@ -97,14 +110,14 @@ public class CountdownTimerTileSkin extends TileSkin {
         barBackground = new Arc(PREFERRED_WIDTH * 0.5, PREFERRED_HEIGHT * 0.5, PREFERRED_WIDTH * 0.468, PREFERRED_HEIGHT * 0.468, 90, 360);
         barBackground.setType(ArcType.OPEN);
         barBackground.setStroke(tile.getBarBackgroundColor());
-        barBackground.setStrokeWidth(PREFERRED_WIDTH * 0.1);
+        barBackground.setStrokeWidth(PREFERRED_WIDTH * 0.125);
         barBackground.setStrokeLineCap(StrokeLineCap.BUTT);
         barBackground.setFill(null);
 
         bar = new Arc(PREFERRED_WIDTH * 0.5, PREFERRED_HEIGHT * 0.5, PREFERRED_WIDTH * 0.468, PREFERRED_HEIGHT * 0.468, 90, 0);
         bar.setType(ArcType.OPEN);
         bar.setStroke(tile.getBarColor());
-        bar.setStrokeWidth(PREFERRED_WIDTH * 0.1);
+        bar.setStrokeWidth(PREFERRED_WIDTH * 0.125);
         bar.setStrokeLineCap(StrokeLineCap.BUTT);
         bar.setFill(null);
 
@@ -132,6 +145,7 @@ public class CountdownTimerTileSkin extends TileSkin {
         runningListener = (o, ov, nv) -> {
             if (nv) {
                 timeText.setText(DTF.format(LocalTime.now().plus(duration.getSeconds(), ChronoUnit.SECONDS)));
+
             }
         };
         timeListener = e -> {
@@ -180,6 +194,32 @@ public class CountdownTimerTileSkin extends TileSkin {
             tile.setRunning(false);
             timeText.setText("");
         }
+        setBarColor();
+    }
+
+    private void setBarColor() {
+        double colorStep = getColorStep();
+        if (!sectionsVisible && !colorGradientEnabled) {
+            //bar.setStroke(tile.getBarColor());
+            bar.setStroke(gradientLookup.getColorAt(colorStep));
+        } else if (colorGradientEnabled && noOfGradientStops > 1) {
+            bar.setStroke(gradientLookup.getColorAt(colorStep));
+        } else {
+            bar.setStroke(tile.getBarColor());
+            for (Section section : sections) {
+                if (section.contains(colorStep)) {
+                    bar.setStroke(section.getColor());
+                    break;
+                }
+            }
+        }
+    }
+
+    private double getColorStep() {
+        double value = duration.getSeconds();
+        // guard
+        value = value < 1 ? 0.1 : value;
+        return value / range;
     }
 
     @Override public void dispose() {
@@ -187,6 +227,15 @@ public class CountdownTimerTileSkin extends TileSkin {
         tile.removeTimeEventListener(timeListener);
         super.dispose();
     }
+
+    public void removeTimeListener() {
+        tile.removeTimeEventListener(timeListener);
+    }
+
+    public void reregisterTimeEventListener() {
+        tile.addTimeEventListener(timeListener);
+    }
+
 
 
     // ******************** Resizing ******************************************
@@ -249,13 +298,13 @@ public class CountdownTimerTileSkin extends TileSkin {
             barBackground.setCenterY(contentCenterY);
             barBackground.setRadiusX(radius);
             barBackground.setRadiusY(radius);
-            barBackground.setStrokeWidth(chartSize * 0.1);
+            barBackground.setStrokeWidth(chartSize * 0.125);
 
             bar.setCenterX(contentCenterX);
             bar.setCenterY(contentCenterY);
             bar.setRadiusX(radius);
             bar.setRadiusY(radius);
-            bar.setStrokeWidth(chartSize * 0.1);
+            bar.setStrokeWidth(chartSize * 0.125);
 
             separator.setStartX(contentCenterX);
             separator.setStartY(contentCenterX - radius - chartSize * 0.05);
@@ -274,8 +323,12 @@ public class CountdownTimerTileSkin extends TileSkin {
     @Override protected void redraw() {
         super.redraw();
 
+        gradientLookup.setStops(tile.getGradientStops());
+        colorGradientEnabled = tile.isStrokeWithGradient();
+
         barBackground.setStroke(tile.getBarBackgroundColor());
-        bar.setStroke(tile.getBarColor());
+        setBarColor();
+
         durationText.setFill(tile.getValueColor());
         timeText.setFill(tile.getValueColor());
         titleText.setFill(tile.getTitleColor());
